@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Объект · Живые обои</title>
+    <title>3D Объект · Маленькая модель</title>
     <style>
         * {
             margin: 0;
@@ -22,30 +22,24 @@
             height: 100vh;
         }
 
-        /* —— Подсказка для управления —— */
         .hint {
             position: fixed;
             bottom: 30px;
             left: 50%;
             transform: translateX(-50%);
-            color: rgba(255, 255, 255, 0.2);
-            font-size: 14px;
+            color: rgba(255, 255, 255, 0.25);
+            font-size: 13px;
             letter-spacing: 2px;
             user-select: none;
             pointer-events: none;
-            background: rgba(0, 0, 0, 0.3);
-            padding: 10px 24px;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 8px 20px;
             border-radius: 30px;
             backdrop-filter: blur(8px);
             border: 1px solid rgba(255, 255, 255, 0.05);
-            transition: opacity 0.8s;
+            transition: opacity 1s;
         }
 
-        .hint:hover {
-            opacity: 0;
-        }
-
-        /* —— Лоадер (пока модель грузится) —— */
         #loader {
             position: fixed;
             top: 0;
@@ -57,19 +51,20 @@
             align-items: center;
             background: #0a0a0f;
             color: white;
-            font-size: 18px;
+            font-size: 16px;
             z-index: 100;
             transition: opacity 0.8s;
+            flex-direction: column;
+            gap: 20px;
         }
 
         .loader-spinner {
-            width: 50px;
-            height: 50px;
+            width: 40px;
+            height: 40px;
             border: 3px solid rgba(255, 255, 255, 0.1);
             border-top: 3px solid #6c5ce7;
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin-right: 20px;
         }
 
         @keyframes spin {
@@ -80,16 +75,13 @@
 </head>
 <body>
 
-    <!-- Лоадер -->
     <div id="loader">
         <div class="loader-spinner"></div>
         <span>Загрузка 3D модели...</span>
     </div>
 
-    <!-- Подсказка -->
-    <div class="hint">🖱 Тяни мышкой · Крути модель</div>
+    <div class="hint">🖱 Тяни · Крути · Приближай</div>
 
-    <!-- Подключаем Three.js и его расширения -->
     <script type="importmap">
         {
             "imports": {
@@ -100,7 +92,6 @@
     </script>
 
     <script type="module">
-        // —— Импорты ——
         import * as THREE from 'three';
         import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
         import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
@@ -111,15 +102,11 @@
         scene.background = new THREE.Color(0x0a0a0f);
 
         // —— Камера ——
-        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(0, 0, 5);
-        camera.lookAt(0, 0, 0);
+        const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(0, 0.5, 2.5);
 
         // —— Рендер ——
-        const renderer = new THREE.WebGLRenderer({ 
-            antialias: true,
-            alpha: false
-        });
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         renderer.shadowMap.enabled = true;
@@ -128,55 +115,63 @@
         renderer.toneMappingExposure = 1.2;
         document.body.prepend(renderer.domElement);
 
-        // —— Орбит контрол (вращение мышкой) ——
+        // —— Орбит контрол ——
         const controls = new OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
-        controls.dampingFactor = 0.05;
+        controls.dampingFactor = 0.08;
         controls.autoRotate = true;
-        controls.autoRotateSpeed = 1.5;
+        controls.autoRotateSpeed = 2.0;
         controls.enableZoom = true;
-        controls.zoomSpeed = 0.5;
+        controls.zoomSpeed = 0.8;
         controls.enablePan = false;
-        controls.maxPolarAngle = Math.PI / 1.8;
-        controls.minPolarAngle = Math.PI / 6;
-        controls.target.set(0, 0, 0);
+        controls.maxPolarAngle = Math.PI / 1.6;
+        controls.minPolarAngle = Math.PI / 8;
+        controls.target.set(0, 0.5, 0);
 
         // —— Свет ——
-        // Основной свет (спереди)
-        const mainLight = new THREE.DirectionalLight(0xffffff, 1.5);
-        mainLight.position.set(2, 3, 4);
+        const mainLight = new THREE.DirectionalLight(0xffffff, 1.8);
+        mainLight.position.set(3, 4, 5);
         mainLight.castShadow = true;
         scene.add(mainLight);
 
-        // Заполняющий свет (сзади)
-        const backLight = new THREE.DirectionalLight(0x4dc9ff, 0.6);
-        backLight.position.set(-2, -1, -3);
+        const backLight = new THREE.DirectionalLight(0x4dc9ff, 0.8);
+        backLight.position.set(-2, 1, -4);
         scene.add(backLight);
 
-        // Подсветка снизу
-        const bottomLight = new THREE.DirectionalLight(0xff4d7a, 0.4);
-        bottomLight.position.set(0, -3, 1);
+        const bottomLight = new THREE.DirectionalLight(0xff4d7a, 0.5);
+        bottomLight.position.set(1, -4, 2);
         scene.add(bottomLight);
 
-        // Ambient (общий фон)
         const ambientLight = new THREE.AmbientLight(0x222244, 0.5);
         scene.add(ambientLight);
 
-        // —— Светящиеся точки (декоративные) ——
-        const pointLight1 = new THREE.PointLight(0x6c5ce7, 0.8, 10);
+        // —— Декоративные огни ——
+        const pointLight1 = new THREE.PointLight(0x6c5ce7, 0.6, 5);
         pointLight1.position.set(2, 1, 2);
         scene.add(pointLight1);
 
-        const pointLight2 = new THREE.PointLight(0x00d2ff, 0.6, 10);
-        pointLight2.position.set(-2, -1, 2);
+        const pointLight2 = new THREE.PointLight(0x00d2ff, 0.4, 5);
+        pointLight2.position.set(-2, 0.5, 2);
         scene.add(pointLight2);
 
-        // —— Фон: частицы (звёзды) ——
+        // —— Пол (прозрачная плоскость для теней) ——
+        const groundGeometry = new THREE.PlaneGeometry(6, 6);
+        const groundMaterial = new THREE.ShadowMaterial({
+            opacity: 0.3,
+            color: 0x000000
+        });
+        const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+        ground.rotation.x = -Math.PI / 2;
+        ground.position.y = -0.1;
+        ground.receiveShadow = true;
+        scene.add(ground);
+
+        // —— Звёзды ——
         const starsGeometry = new THREE.BufferGeometry();
-        const starCount = 2000;
+        const starCount = 1500;
         const positions = new Float32Array(starCount * 3);
         for (let i = 0; i < starCount * 3; i += 3) {
-            const radius = 20 + Math.random() * 30;
+            const radius = 15 + Math.random() * 25;
             const theta = Math.random() * Math.PI * 2;
             const phi = Math.acos((Math.random() * 2) - 1);
             positions[i] = radius * Math.sin(phi) * Math.cos(theta);
@@ -186,9 +181,9 @@
         starsGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
         const starsMaterial = new THREE.PointsMaterial({
             color: 0xffffff,
-            size: 0.08,
+            size: 0.06,
             transparent: true,
-            opacity: 0.6,
+            opacity: 0.5,
             blending: THREE.AdditiveBlending,
             sizeAttenuation: true
         });
@@ -197,66 +192,50 @@
 
         // —— Загрузка модели ——
         const loader = document.getElementById('loader');
-        let modelLoaded = false;
-
-        // Функция загрузки с MTL (если есть)
-        function loadModelWithMTL(objPath, mtlPath) {
-            const mtlLoader = new MTLLoader();
-            mtlLoader.load(mtlPath, (materials) => {
-                materials.preload();
-                const objLoader = new OBJLoader();
-                objLoader.setMaterials(materials);
-                objLoader.load(objPath, (object) => {
-                    onModelLoaded(object);
-                }, undefined, onError);
-            }, undefined, onError);
-        }
-
-        // Функция загрузки только OBJ (без материалов)
-        function loadModelOnlyOBJ(path) {
-            const objLoader = new OBJLoader();
-            objLoader.load(path, (object) => {
-                onModelLoaded(object);
-            }, undefined, onError);
-        }
 
         function onModelLoaded(object) {
-            // —— Настраиваем модель ——
-            object.scale.set(0.8, 0.8, 0.8);
+            // МАСШТАБ: уменьшаем (0.3 = 30% от оригинала)
+            object.scale.set(0.3, 0.3, 0.3);
             
-            // Центрируем модель
+            // ПОВОРОТ: ставим вертикально
+            // Если модель лежит на боку - пробуй разные комбинации:
+            object.rotation.x = -Math.PI / 2;  // Ставим на ноги
+            // object.rotation.z = Math.PI / 2; // Альтернативный вариант
+            
+            // ПОЗИЦИЯ: поднимаем выше пола
             const box = new THREE.Box3().setFromObject(object);
+            const size = box.getSize(new THREE.Vector3());
             const center = box.getCenter(new THREE.Vector3());
-            object.position.sub(center);
             
-            // Добавляем тени
+            // Смещаем так, чтобы модель стояла на "полу" (y=0)
+            const minY = box.min.y;
+            object.position.y = -minY + 0.1; // чуть выше пола
+            
+            // Центрируем по горизонтали
+            object.position.x = -center.x;
+            object.position.z = -center.z;
+            
+            // Настройка материалов
             object.traverse((child) => {
                 if (child.isMesh) {
                     child.castShadow = true;
                     child.receiveShadow = true;
-                    // Добавляем блеск материалам
                     if (child.material) {
-                        if (Array.isArray(child.material)) {
-                            child.material.forEach(mat => {
-                                mat.roughness = 0.3;
-                                mat.metalness = 0.7;
-                                mat.envMapIntensity = 1.0;
-                            });
-                        } else {
-                            child.material.roughness = 0.3;
-                            child.material.metalness = 0.7;
-                            child.material.envMapIntensity = 1.0;
-                        }
+                        const mats = Array.isArray(child.material) ? child.material : [child.material];
+                        mats.forEach(mat => {
+                            mat.roughness = 0.3;
+                            mat.metalness = 0.7;
+                            mat.envMapIntensity = 1.0;
+                        });
                     }
                 }
             });
 
             scene.add(object);
-            modelLoaded = true;
             loader.style.opacity = '0';
             setTimeout(() => loader.style.display = 'none', 800);
-
-            // Отключаем авто-вращение после первого клика
+            
+            // Клик = стоп авто-вращения
             renderer.domElement.addEventListener('click', () => {
                 controls.autoRotate = false;
             });
@@ -264,70 +243,54 @@
                 controls.autoRotate = !controls.autoRotate;
             });
 
-            console.log('✅ 3D модель успешно загружена!');
+            console.log('✅ Модель загружена! Размер: 0.3');
+            console.log(`📐 Габариты: ${size.x.toFixed(2)} × ${size.y.toFixed(2)} × ${size.z.toFixed(2)}`);
         }
 
-        function onError(error) {
-            console.error('❌ Ошибка загрузки модели:', error);
-            loader.innerHTML = `
-                <div style="color: #ff6b6b; text-align: center;">
-                    <div style="font-size: 40px; margin-bottom: 10px;">⚠️</div>
-                    <div>Не удалось загрузить модель</div>
-                    <div style="font-size: 13px; opacity: 0.6; margin-top: 10px;">
-                        Поместите <b>model.obj</b> и <b>model.mtl</b> в папку с этим файлом
-                    </div>
-                    <div style="font-size: 13px; opacity: 0.4; margin-top: 5px;">
-                        Или используйте встроенную тестовую модель
-                    </div>
-                </div>
-            `;
-            // Создаём тестовую модель (тор)
-            createTestModel();
-        }
-
-        // —— Тестовая модель (если нет OBJ) ——
         function createTestModel() {
-            const geometry = new THREE.TorusKnotGeometry(1, 0.3, 100, 16);
+            const geometry = new THREE.TorusKnotGeometry(0.5, 0.15, 80, 12);
             const material = new THREE.MeshPhysicalMaterial({
                 color: 0x6c5ce7,
-                metalness: 0.8,
-                roughness: 0.2,
+                metalness: 0.9,
+                roughness: 0.15,
                 emissive: 0x2d1b69,
-                emissiveIntensity: 0.2,
-                clearcoat: 0.3,
+                emissiveIntensity: 0.3,
+                clearcoat: 0.4,
             });
             const model = new THREE.Mesh(geometry, material);
-            model.scale.set(0.8, 0.8, 0.8);
+            model.scale.set(0.3, 0.3, 0.3);
+            model.position.y = 0.4;
             model.castShadow = true;
             model.receiveShadow = true;
             scene.add(model);
-            modelLoaded = true;
             loader.style.opacity = '0';
             setTimeout(() => loader.style.display = 'none', 800);
-            console.log('🔮 Используется тестовая модель (Torus Knot)');
+            console.log('🔮 Тестовая модель (узел)');
         }
 
-        // —— Пытаемся загрузить модель ——
-        // Вариант 1: Если есть MTL
-        // loadModelWithMTL('model.obj', 'model.mtl');
-
-        // Вариант 2: Только OBJ (без материалов)
-        // loadModelOnlyOBJ('model.obj');
-
-        // Вариант 3: Авто-определение
+        // —— Авто-загрузка ——
         fetch('model.obj')
             .then(response => {
                 if (response.ok) {
-                    // Проверяем, есть ли MTL
                     fetch('model.mtl')
                         .then(mtlRes => {
                             if (mtlRes.ok) {
-                                loadModelWithMTL('model.obj', 'model.mtl');
+                                const mtlLoader = new MTLLoader();
+                                mtlLoader.load('model.mtl', (materials) => {
+                                    materials.preload();
+                                    const objLoader = new OBJLoader();
+                                    objLoader.setMaterials(materials);
+                                    objLoader.load('model.obj', onModelLoaded);
+                                });
                             } else {
-                                loadModelOnlyOBJ('model.obj');
+                                const objLoader = new OBJLoader();
+                                objLoader.load('model.obj', onModelLoaded);
                             }
                         })
-                        .catch(() => loadModelOnlyOBJ('model.obj'));
+                        .catch(() => {
+                            const objLoader = new OBJLoader();
+                            objLoader.load('model.obj', onModelLoaded);
+                        });
                 } else {
                     createTestModel();
                 }
@@ -337,22 +300,17 @@
         // —— Анимация ——
         function animate() {
             requestAnimationFrame(animate);
-
-            // Вращаем звёзды
             stars.rotation.y += 0.0002;
-            stars.rotation.x += 0.0001;
-
-            // Двигаем источники света по кругу
+            
             const time = Date.now() * 0.0003;
-            pointLight1.position.x = Math.sin(time) * 3;
-            pointLight1.position.z = Math.cos(time) * 3;
-            pointLight2.position.x = Math.sin(time + 2) * 2.5;
-            pointLight2.position.z = Math.cos(time + 2) * 2.5;
+            pointLight1.position.x = Math.sin(time) * 2.5;
+            pointLight1.position.z = Math.cos(time) * 2.5;
+            pointLight2.position.x = Math.sin(time + 2) * 2;
+            pointLight2.position.z = Math.cos(time + 2) * 2;
 
             controls.update();
             renderer.render(scene, camera);
         }
-
         animate();
 
         // —— Ресайз ——
@@ -362,13 +320,10 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
 
-        // —— Дополнительно: скрываем подсказку через 10 секунд ——
+        // Скрываем подсказку
         setTimeout(() => {
-            const hint = document.querySelector('.hint');
-            if (hint) hint.style.opacity = '0';
-        }, 10000);
-
-        console.log('🚀 3D обои запущены!');
+            document.querySelector('.hint').style.opacity = '0';
+        }, 8000);
     </script>
 </body>
 </html>
